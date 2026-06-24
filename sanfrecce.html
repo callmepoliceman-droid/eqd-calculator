@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>EQD Calculator | SANFRECCE</title>
+<style>
+  :root{
+    --purple:#56247d;      /* Sanfrecce purple */
+    --purple-d:#3d1860;
+    --purple-l:#7b3fa8;
+    --gold:#d9b53f;
+    --ink:#241433;
+    --paper:#f4eefa;
+    --white:#ffffff;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Yu Gothic",sans-serif;}
+  body{
+    min-height:100vh;
+    background:
+      linear-gradient(180deg, var(--purple-d) 0%, var(--purple) 30%, #ede4f6 30%, #f4eefa 100%);
+  }
+  /* pitch stripes behind everything */
+  .pitch{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;
+    background:repeating-linear-gradient(90deg, rgba(86,36,125,.06) 0 40px, rgba(86,36,125,.11) 40px 80px);}
+  .wrap{position:relative;z-index:1;max-width:540px;margin:0 auto;padding:0 12px 40px;}
+
+  /* ---- Crest banner ---- */
+  .banner{position:relative;text-align:center;padding:22px 14px 18px;color:#fff;}
+  .crest{width:78px;height:78px;margin:0 auto 6px;display:block;
+    filter:drop-shadow(0 4px 8px rgba(0,0,0,.35));}
+  .banner h1{margin:0;font-size:26px;font-weight:900;letter-spacing:1px;
+    text-shadow:2px 2px 0 var(--purple-d);}
+  .banner .club{margin:2px 0 0;font-size:13px;font-weight:800;color:var(--gold);letter-spacing:3px;}
+  .banner p{margin:8px 0 0;font-size:12px;font-weight:600;opacity:.92;}
+  .goldline{height:4px;width:120px;margin:12px auto 0;border-radius:4px;
+    background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+
+  /* ---- Card ---- */
+  .card{background:var(--white);border:2px solid var(--purple);
+    border-radius:16px;padding:14px 12px;margin-bottom:14px;
+    box-shadow:0 8px 22px rgba(61,24,96,.22);position:relative;overflow:hidden;}
+  .card::before{content:"";position:absolute;top:0;left:0;right:0;height:6px;
+    background:linear-gradient(90deg,var(--purple),var(--purple-l),var(--gold));}
+  .card-title{display:flex;align-items:center;gap:8px;font-weight:900;font-size:15px;
+    margin:4px 0 12px;color:var(--purple);letter-spacing:.5px;}
+  .card-title svg{flex:0 0 auto;}
+
+  .colhead{display:grid;grid-template-columns:1.2fr 1fr 1fr 2.7fr;gap:6px;
+    border-bottom:2px solid var(--purple);padding-bottom:8px;}
+  .ch{text-align:center;font-size:11px;line-height:1.2;font-weight:700;color:var(--ink);
+    display:flex;flex-direction:column;justify-content:flex-end;align-items:center;}
+  .ch em{font-style:italic;color:var(--purple-l);}
+  .ablabel{grid-column:1/ -1;font-size:11px;font-weight:800;color:var(--purple);text-align:center;margin-bottom:4px;}
+  .ab3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+  .ab3 input{width:100%;text-align:center;font-size:18px;font-weight:800;border:2px solid var(--purple);
+    border-radius:9px;background:var(--paper);padding:8px 2px;color:var(--purple);}
+
+  .rowwrap{display:grid;grid-template-columns:1.2fr 1fr 1fr 2.7fr;gap:6px;padding:6px 0;align-items:center;}
+
+  input.cell{width:100%;text-align:center;font-size:22px;font-weight:800;border:2px solid #cbbcdd;
+    border-radius:9px;background:#fff;padding:11px 2px;color:var(--ink);min-width:0;}
+  input.cell::placeholder{color:#b6a8c8;font-weight:500;}
+  input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(217,181,63,.35);}
+
+  .out{display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:800;
+    border-radius:9px;padding:11px 2px;min-width:0;}
+  .total{background:var(--paper);color:var(--purple);border:2px solid #d9cce8;}
+  .bed3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+  .bedval{display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:800;
+    border-radius:9px;padding:11px 1px;color:#fff;}
+  .bedval.c0{background:var(--purple);}
+  .bedval.c1{background:var(--purple-l);}
+  .bedval.c2{background:#9a6cc4;}
+
+  /* ---- Sum (scoreboard) ---- */
+  .sum{background:linear-gradient(120deg,var(--purple-d),var(--purple));border-radius:12px;
+    padding:11px 9px;margin-top:8px;border:2px solid var(--gold);}
+  .sumrow{display:grid;grid-template-columns:1.2fr 1fr 1fr 2.7fr;gap:6px;align-items:center;color:#fff;}
+  .sumlabel{font-size:22px;font-weight:900;display:flex;align-items:center;gap:6px;color:var(--gold);}
+  .sumcenter{display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:900;}
+  .sum .bed3 .sumcenter{background:rgba(255,255,255,.14);border-radius:8px;padding:8px 1px;}
+
+  /* ---- Equivalent panels ---- */
+  .panel{display:grid;grid-template-columns:1.3fr 1.35fr 2.6fr;gap:8px;align-items:center;
+    padding:13px 0;border-bottom:2px dashed #d6c9e6;}
+  .panel:last-child{border-bottom:none;padding-bottom:2px;}
+  .plabel{font-size:13px;font-weight:700;line-height:1.25;text-align:right;color:var(--ink);}
+  .pinwrap{display:flex;align-items:center;gap:4px;}
+  .pinwrap input{width:100%;text-align:center;font-size:21px;font-weight:800;border:2px solid #cbbcdd;
+    border-radius:9px;background:#fff;padding:10px 2px;}
+  .punit{font-size:11px;font-weight:800;color:var(--purple-l);line-height:1.15;}
+  .pout{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+  .pout span{text-align:center;font-size:20px;font-weight:800;border-radius:9px;padding:9px 1px;color:#fff;}
+  .pout span:nth-child(1){background:var(--purple);}
+  .pout span:nth-child(2){background:var(--purple-l);}
+  .pout span:nth-child(3){background:#9a6cc4;}
+
+  .note{margin-top:14px;font-size:11px;font-weight:600;color:var(--purple);line-height:1.7;text-align:center;}
+  .formula{font-family:ui-monospace,Menlo,monospace;background:#fff;border:1px solid var(--purple);
+    border-radius:6px;padding:1px 6px;}
+  .chant{text-align:center;margin-top:14px;color:var(--purple);font-weight:900;font-size:13px;letter-spacing:1px;}
+
+  @media (max-width:380px){
+    .banner h1{font-size:22px;}
+    input.cell,.out,.bedval,.sumcenter{font-size:18px;}
+    .pout span,.pinwrap input{font-size:17px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- three-arrows emblem symbol (Sanfrecce = 三本の矢) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="arrows" viewBox="0 0 64 48">
+    <g fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+      <g transform="translate(0,4)">
+        <line x1="6" y1="6" x2="50" y2="6"/><polyline points="40,1 52,6 40,11"/>
+      </g>
+      <g transform="translate(0,18)">
+        <line x1="6" y1="6" x2="50" y2="6"/><polyline points="40,1 52,6 40,11"/>
+      </g>
+      <g transform="translate(0,32)">
+        <line x1="6" y1="6" x2="50" y2="6"/><polyline points="40,1 52,6 40,11"/>
+      </g>
+    </g>
+  </symbol>
+  <!-- crest: shield + three arrows + ball -->
+  <symbol id="crest" viewBox="0 0 100 100">
+    <path d="M50 4 L92 16 V52 C92 78 72 92 50 98 C28 92 8 78 8 52 V16 Z"
+          fill="#56247d" stroke="#d9b53f" stroke-width="4"/>
+    <g fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+      <g transform="translate(20,24)">
+        <line x1="0" y1="0" x2="44" y2="0"/><polyline points="34,-6 48,0 34,6"/>
+      </g>
+      <g transform="translate(20,40)">
+        <line x1="0" y1="0" x2="44" y2="0"/><polyline points="34,-6 48,0 34,6"/>
+      </g>
+      <g transform="translate(20,56)">
+        <line x1="0" y1="0" x2="44" y2="0"/><polyline points="34,-6 48,0 34,6"/>
+      </g>
+    </g>
+    <circle cx="50" cy="80" r="9" fill="#fff" stroke="#56247d" stroke-width="2"/>
+    <path d="M50 73 l5 4 -2 6 -6 0 -2 -6 z" fill="#56247d"/>
+  </symbol>
+</svg>
+
+<div class="pitch"></div>
+
+<div class="wrap">
+
+  <!-- ===== Banner ===== -->
+  <div class="banner">
+    <svg class="crest"><use href="#crest"/></svg>
+    <h1>EQD Calculator</h1>
+    <div class="club">SANFRECCE HIROSHIMA EDITION</div>
+    <p>LQ-model 線量分割 ＆ 生物学的等価線量（BED / EQD）</p>
+    <div class="goldline"></div>
+  </div>
+
+  <!-- ===== BED card ===== -->
+  <div class="card">
+    <div class="card-title"><svg width="26" height="20" style="color:var(--purple)"><use href="#arrows" width="26" height="20"/></svg>Biologically Effective Dose</div>
+
+    <div class="colhead">
+      <div class="ch">Fraction<br>dose<br><em>d</em> [Gy/fr]</div>
+      <div class="ch">Number of<br>fractions<br><em>n</em></div>
+      <div class="ch">Total<br>dose<br><em>n·d</em> [Gy]</div>
+      <div style="display:flex;flex-direction:column;justify-content:flex-end;">
+        <div class="ablabel">α/β ratio [Gy]（変更可）</div>
+        <div class="ab3">
+          <input id="ab0" type="number" inputmode="decimal" step="0.1" value="1.5">
+          <input id="ab1" type="number" inputmode="decimal" step="0.1" value="3.0">
+          <input id="ab2" type="number" inputmode="decimal" step="0.1" value="10.0">
+        </div>
+      </div>
+    </div>
+
+    <div class="rowwrap">
+      <input class="cell d" data-i="0" type="number" inputmode="decimal" step="0.1" placeholder="Gy/f" value="1.8">
+      <input class="cell n" data-i="0" type="number" inputmode="numeric" step="1" placeholder="fx." value="25">
+      <div class="out total" id="t0">0.0</div>
+      <div class="bed3"><span class="bedval c0" id="b0_0">0.0</span><span class="bedval c1" id="b0_1">0.0</span><span class="bedval c2" id="b0_2">0.0</span></div>
+    </div>
+    <div class="rowwrap">
+      <input class="cell d" data-i="1" type="number" inputmode="decimal" step="0.1" placeholder="Gy/f" value="9.0">
+      <input class="cell n" data-i="1" type="number" inputmode="numeric" step="1" placeholder="fx." value="2">
+      <div class="out total" id="t1">0.0</div>
+      <div class="bed3"><span class="bedval c0" id="b1_0">0.0</span><span class="bedval c1" id="b1_1">0.0</span><span class="bedval c2" id="b1_2">0.0</span></div>
+    </div>
+    <div class="rowwrap">
+      <input class="cell d" data-i="2" type="number" inputmode="decimal" step="0.1" placeholder="Gy/f">
+      <input class="cell n" data-i="2" type="number" inputmode="numeric" step="1" placeholder="fx.">
+      <div class="out total" id="t2">0.0</div>
+      <div class="bed3"><span class="bedval c0" id="b2_0">0.0</span><span class="bedval c1" id="b2_1">0.0</span><span class="bedval c2" id="b2_2">0.0</span></div>
+    </div>
+
+    <div class="sum">
+      <div class="sumrow">
+        <div class="sumlabel"><svg width="22" height="16" style="color:var(--gold)"><use href="#arrows" width="22" height="16"/></svg>Sum</div>
+        <div class="sumcenter" id="sumN">0</div>
+        <div class="sumcenter" id="sumD">0.0</div>
+        <div class="bed3"><span class="sumcenter" id="sb0">0.0</span><span class="sumcenter" id="sb1">0.0</span><span class="sumcenter" id="sb2">0.0</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Equivalent card ===== -->
+  <div class="card">
+    <div class="card-title"><svg width="26" height="20" style="color:var(--purple)"><use href="#arrows" width="26" height="20"/></svg>Equivalent fractionation</div>
+
+    <div class="panel">
+      <div class="plabel">Equivalent<br>Dose [Gy] in</div>
+      <div class="pinwrap"><input id="eqd_d" type="number" inputmode="decimal" step="0.1" value="2.0"><span class="punit">Gy/<br>fr.</span></div>
+      <div class="pout"><span id="eqd0">0.0</span><span id="eqd1">0.0</span><span id="eqd2">0.0</span></div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">Number of<br>fractions</div>
+      <div class="pinwrap"><input id="eqd_n" type="number" inputmode="numeric" step="1" value="25"><span class="punit">Gy/<br>fr.</span></div>
+      <div class="pout"><span id="fd0">0.0</span><span id="fd1">0.0</span><span id="fd2">0.0</span></div>
+    </div>
+  </div>
+
+  <div class="note">
+    LQ model：<span class="formula">BED = n·d·(1 + d/(α/β))</span><br>
+    等価線量は合計BEDから逆算。3列はそれぞれ左のα/β比に対応。
+  </div>
+
+  <div class="chant">三本の矢、紫の誇り — SANFRECCE HIROSHIMA</div>
+
+</div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const num = el => { const v = parseFloat(el.value); return isFinite(v) ? v : 0; };
+  const fmt1 = x => (isFinite(x)? x.toFixed(1) : '0.0');
+  const fmt2 = x => (isFinite(x)? x.toFixed(2) : '0.0');
+
+  function abRatios(){ return [num($('ab0')), num($('ab1')), num($('ab2'))]; }
+  function bed(d, n, ab){
+    if(!(d>0) || !(n>0) || !(ab>0)) return 0;
+    return n*d*(1 + d/ab);
+  }
+
+  function recompute(){
+    const ab = abRatios();
+    const ds = document.querySelectorAll('.cell.d');
+    const ns = document.querySelectorAll('.cell.n');
+    const sumBED = [0,0,0];
+    let sumN = 0, sumD = 0;
+
+    for(let r=0; r<3; r++){
+      const d = num(ds[r]), n = num(ns[r]);
+      const tot = (d>0 && n>0) ? d*n : 0;
+      $('t'+r).textContent = fmt1(tot);
+      sumN += (n>0 ? n : 0);
+      sumD += tot;
+      for(let c=0; c<3; c++){
+        const b = bed(d, n, ab[c]);
+        $('b'+r+'_'+c).textContent = fmt1(b);
+        sumBED[c] += b;
+      }
+    }
+
+    $('sumN').textContent = sumN ? String(Math.round(sumN)) : '0';
+    $('sumD').textContent = fmt1(sumD);
+    for(let c=0;c<3;c++) $('sb'+c).textContent = fmt1(sumBED[c]);
+
+    const dEq = num($('eqd_d'));
+    for(let c=0;c<3;c++){
+      let v = 0;
+      if(ab[c]>0 && dEq>=0){ v = sumBED[c] / (1 + dEq/ab[c]); }
+      $('eqd'+c).textContent = fmt1(v);
+    }
+
+    const nEq = num($('eqd_n'));
+    for(let c=0;c<3;c++){
+      let x = 0;
+      if(nEq>0 && ab[c]>0 && sumBED[c]>0){
+        const A = nEq/ab[c], B = nEq, C = -sumBED[c];
+        x = (-B + Math.sqrt(B*B - 4*A*C)) / (2*A);
+      }
+      $('fd'+c).textContent = fmt2(x);
+    }
+  }
+
+  document.querySelectorAll('input').forEach(el=>{
+    ['input','change','keyup','blur'].forEach(ev=>el.addEventListener(ev, recompute));
+    if(el.classList.contains('cell')||el.id==='eqd_n'){
+      el.addEventListener('focus', ()=>el.select());
+    }
+  });
+  recompute();
+  // Fallback for restricted JS environments (e.g. iOS Quick Look) where
+  // input events may not fire: recompute periodically. recompute() only
+  // writes to output cells, so it never disturbs the field being typed.
+  setInterval(recompute, 250);
+})();
+</script>
+</body>
+</html>
