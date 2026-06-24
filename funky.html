@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>EQD Calculator 🚴</title>
+<style>
+  :root{
+    --pink:#ff2e88;
+    --orange:#ff8a00;
+    --yellow:#ffd000;
+    --cyan:#00e5ff;
+    --purple:#7c3aed;
+    --lime:#aaff00;
+    --ink:#16123a;
+    --paper:#fff7fb;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Yu Gothic",sans-serif;
+    color:var(--ink);}
+  body{
+    background:
+      radial-gradient(circle at 12% 8%, rgba(255,46,136,.20), transparent 38%),
+      radial-gradient(circle at 88% 16%, rgba(0,229,255,.22), transparent 40%),
+      radial-gradient(circle at 20% 92%, rgba(170,255,0,.18), transparent 42%),
+      radial-gradient(circle at 80% 84%, rgba(124,58,237,.20), transparent 40%),
+      linear-gradient(135deg,#fff0f6 0%,#eafcff 50%,#fff8e6 100%);
+    min-height:100vh;
+  }
+
+  /* floating bikes in the background */
+  .bgbikes{position:fixed;inset:0;overflow:hidden;z-index:0;pointer-events:none;}
+  .bgbikes svg{position:absolute;opacity:.10;animation:float 9s ease-in-out infinite;}
+  @keyframes float{0%,100%{transform:translateY(0) rotate(-4deg);}50%{transform:translateY(-18px) rotate(4deg);}}
+
+  .wrap{position:relative;z-index:1;max-width:540px;margin:0 auto;padding:16px 12px 40px;}
+
+  /* ---- Funky header banner ---- */
+  .banner{
+    position:relative;border-radius:26px;padding:18px 16px 16px;margin-bottom:14px;
+    background:linear-gradient(115deg,var(--pink),var(--orange) 55%,var(--yellow));
+    box-shadow:0 12px 0 rgba(124,58,237,.35), 0 18px 30px rgba(255,46,136,.35);
+    border:4px solid #fff;overflow:hidden;
+  }
+  .banner h1{margin:0;color:#fff;font-size:30px;font-weight:900;letter-spacing:.5px;
+    text-shadow:3px 3px 0 rgba(124,58,237,.55);display:flex;align-items:center;gap:10px;}
+  .banner p{margin:6px 0 0;color:#fff;font-weight:700;font-size:14px;
+    text-shadow:1px 1px 0 rgba(124,58,237,.4);}
+  .banner .ribbon{position:absolute;right:-6px;top:-6px;opacity:.9;}
+  .dash{height:6px;margin:10px 0 2px;border-radius:6px;
+    background:repeating-linear-gradient(90deg,#fff 0 16px,transparent 16px 30px);opacity:.85;}
+
+  /* ---- Card / panel ---- */
+  .card{background:rgba(255,255,255,.82);backdrop-filter:blur(4px);border:3px solid var(--ink);
+    border-radius:22px;padding:14px 12px;margin-bottom:14px;
+    box-shadow:6px 6px 0 var(--purple);position:relative;}
+  .card-title{display:flex;align-items:center;gap:8px;font-weight:900;font-size:16px;
+    margin:-4px 0 10px;color:var(--purple);text-transform:uppercase;letter-spacing:.5px;}
+  .card-title svg{flex:0 0 auto;}
+
+  .colhead{display:grid;grid-template-columns:1.15fr 1fr 1fr 2.7fr;gap:6px;margin-bottom:8px;}
+  .ch{text-align:center;font-size:11px;line-height:1.2;font-weight:800;color:var(--ink);
+    display:flex;flex-direction:column;justify-content:flex-end;align-items:center;}
+  .ch em{font-style:italic;color:var(--pink);}
+  .ablabel{grid-column:1/ -1;font-size:11px;font-weight:800;color:var(--purple);text-align:center;margin:2px 0 4px;}
+  .ab3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+
+  /* α/β chips */
+  .ab3 input{width:100%;text-align:center;font-size:18px;font-weight:900;border:3px solid var(--ink);
+    border-radius:14px;padding:8px 2px;color:#fff;}
+  #ab0{background:var(--pink);}
+  #ab1{background:var(--cyan);color:var(--ink);}
+  #ab2{background:var(--lime);color:var(--ink);}
+
+  .rowwrap{display:grid;grid-template-columns:1.15fr 1fr 1fr 2.7fr;gap:6px;padding:5px 0;align-items:center;}
+
+  input.cell{width:100%;text-align:center;font-size:22px;font-weight:900;border:3px solid var(--ink);
+    border-radius:14px;background:#fff;padding:11px 2px;color:var(--ink);min-width:0;
+    box-shadow:3px 3px 0 rgba(22,18,58,.18);}
+  input.cell::placeholder{color:#c0b9d6;font-weight:700;}
+  input:focus{outline:none;transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--orange);}
+
+  .out{display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:900;
+    border-radius:14px;padding:11px 2px;min-width:0;}
+  .total{background:linear-gradient(135deg,#ffe27a,#ffd000);border:3px solid var(--ink);color:var(--ink);}
+  .bed3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+  .bedval{display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:900;
+    border-radius:14px;padding:11px 1px;border:3px solid var(--ink);}
+  .bedval.c0{background:rgba(255,46,136,.16);color:var(--pink);}
+  .bedval.c1{background:rgba(0,229,255,.18);color:#0096a8;}
+  .bedval.c2{background:rgba(170,255,0,.20);color:#5c8a00;}
+
+  /* ---- Sum ---- */
+  .sum{background:linear-gradient(115deg,var(--purple),var(--pink));border:3px solid var(--ink);
+    border-radius:18px;padding:10px 8px;margin-top:6px;box-shadow:4px 4px 0 var(--ink);}
+  .sumrow{display:grid;grid-template-columns:1.15fr 1fr 1fr 2.7fr;gap:6px;align-items:center;color:#fff;}
+  .sumlabel{font-size:22px;font-weight:900;display:flex;align-items:center;gap:6px;
+    text-shadow:2px 2px 0 rgba(0,0,0,.25);}
+  .sumcenter{display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:900;
+    text-shadow:1px 1px 0 rgba(0,0,0,.2);}
+  .sum .bed3 .sumcenter{background:rgba(255,255,255,.18);border-radius:12px;padding:8px 1px;}
+
+  /* ---- Equivalent panels ---- */
+  .panel{display:grid;grid-template-columns:1.25fr 1.35fr 2.6fr;gap:8px;align-items:center;
+    padding:12px 0;border-bottom:3px dashed rgba(124,58,237,.35);}
+  .panel:last-child{border-bottom:none;padding-bottom:2px;}
+  .plabel{font-size:13px;font-weight:800;line-height:1.25;text-align:right;color:var(--ink);}
+  .pinwrap{display:flex;align-items:center;gap:4px;}
+  .pinwrap input{width:100%;text-align:center;font-size:21px;font-weight:900;border:3px solid var(--ink);
+    border-radius:14px;background:#fff;padding:10px 2px;box-shadow:3px 3px 0 rgba(22,18,58,.15);}
+  .punit{font-size:11px;font-weight:800;color:var(--purple);line-height:1.15;}
+  .pout{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+  .pout span{text-align:center;font-size:20px;font-weight:900;border:3px solid var(--ink);border-radius:13px;padding:9px 1px;}
+  .pout span:nth-child(1){background:rgba(255,46,136,.16);color:var(--pink);}
+  .pout span:nth-child(2){background:rgba(0,229,255,.18);color:#0096a8;}
+  .pout span:nth-child(3){background:rgba(170,255,0,.20);color:#5c8a00;}
+
+  .note{margin-top:6px;font-size:11px;font-weight:700;color:var(--purple);line-height:1.7;text-align:center;}
+  .formula{font-family:ui-monospace,Menlo,monospace;background:#fff;border:2px solid var(--ink);
+    border-radius:8px;padding:1px 6px;}
+  .peloton{display:flex;justify-content:center;gap:6px;margin-top:14px;opacity:.85;}
+
+  /* keep column widths fixed; JS shrinks font when numbers get long */
+  .colhead>*,.rowwrap>*,.sumrow>*,.panel>*,.bed3>*,.ab3>*,.pout>*{min-width:0;}
+  input.cell,.ab3 input,.out,.bedval,.sumcenter,.pout span,.pinput input,.pinwrap input{white-space:nowrap;overflow:hidden;}
+
+  @media (max-width:380px){
+    .banner h1{font-size:25px;}
+    input.cell,.out,.bedval,.sumcenter{font-size:18px;}
+    .pout span,.pinwrap input{font-size:17px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== reusable road-bike symbol ===== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="bike" viewBox="0 0 120 70">
+    <g fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+      <!-- wheels -->
+      <circle cx="26" cy="50" r="16"/>
+      <circle cx="94" cy="50" r="16"/>
+      <!-- spokes -->
+      <g stroke-width="1.4">
+        <line x1="26" y1="34" x2="26" y2="66"/><line x1="10" y1="50" x2="42" y2="50"/>
+        <line x1="15" y1="39" x2="37" y2="61"/><line x1="37" y1="39" x2="15" y2="61"/>
+        <line x1="94" y1="34" x2="94" y2="66"/><line x1="78" y1="50" x2="110" y2="50"/>
+        <line x1="83" y1="39" x2="105" y2="61"/><line x1="105" y1="39" x2="83" y2="61"/>
+      </g>
+      <!-- frame -->
+      <path d="M26 50 L52 50 L70 24 L40 24 L26 50 Z"/>
+      <line x1="52" y1="50" x2="70" y2="24"/>
+      <line x1="70" y1="24" x2="94" y2="50"/>
+      <!-- seat post + saddle -->
+      <line x1="40" y1="24" x2="36" y2="14"/>
+      <line x1="29" y1="13" x2="44" y2="13"/>
+      <!-- handlebar / drops -->
+      <line x1="70" y1="24" x2="78" y2="14"/>
+      <path d="M82 14 Q72 12 72 22"/>
+      <!-- crank -->
+      <circle cx="52" cy="50" r="3.4" fill="currentColor" stroke="none"/>
+    </g>
+  </symbol>
+</svg>
+
+<div class="bgbikes" id="bgbikes" aria-hidden="true"></div>
+
+<div class="wrap">
+
+  <!-- ===== Banner ===== -->
+  <div class="banner">
+    <svg class="ribbon" width="120" height="80" style="color:#fff"><use href="#bike" x="0" y="6" width="120" height="70"/></svg>
+    <h1><svg width="42" height="28" style="color:#fff"><use href="#bike" width="42" height="28"/></svg>EQD Calculator</h1>
+    <p>LQ-model 線量分割 ＆ 生物学的等価線量（BED / EQD）</p>
+    <div class="dash"></div>
+  </div>
+
+  <!-- ===== BED card ===== -->
+  <div class="card">
+    <div class="card-title"><svg width="26" height="18" style="color:var(--purple)"><use href="#bike" width="26" height="18"/></svg>Biologically Effective Dose</div>
+
+    <div class="colhead">
+      <div class="ch">Fraction<br>dose<br><em>d</em> [Gy/fr]</div>
+      <div class="ch">Number of<br>fractions<br><em>n</em></div>
+      <div class="ch">Total<br>dose<br><em>n·d</em> [Gy]</div>
+      <div style="display:flex;flex-direction:column;justify-content:flex-end;">
+        <div class="ablabel">α/β ratio [Gy]（変更可）</div>
+        <div class="ab3">
+          <input id="ab0" type="number" inputmode="decimal" step="0.1" value="1.5">
+          <input id="ab1" type="number" inputmode="decimal" step="0.1" value="3.0">
+          <input id="ab2" type="number" inputmode="decimal" step="0.1" value="10.0">
+        </div>
+      </div>
+    </div>
+
+    <div class="rowwrap">
+      <input class="cell d" data-i="0" type="number" inputmode="decimal" step="0.1" placeholder="Gy/f" value="1.8">
+      <input class="cell n" data-i="0" type="number" inputmode="numeric" step="1" placeholder="fx." value="25">
+      <div class="out total" id="t0">0.0</div>
+      <div class="bed3"><span class="bedval c0" id="b0_0">0.0</span><span class="bedval c1" id="b0_1">0.0</span><span class="bedval c2" id="b0_2">0.0</span></div>
+    </div>
+    <div class="rowwrap">
+      <input class="cell d" data-i="1" type="number" inputmode="decimal" step="0.1" placeholder="Gy/f" value="9.0">
+      <input class="cell n" data-i="1" type="number" inputmode="numeric" step="1" placeholder="fx." value="2">
+      <div class="out total" id="t1">0.0</div>
+      <div class="bed3"><span class="bedval c0" id="b1_0">0.0</span><span class="bedval c1" id="b1_1">0.0</span><span class="bedval c2" id="b1_2">0.0</span></div>
+    </div>
+    <div class="rowwrap">
+      <input class="cell d" data-i="2" type="number" inputmode="decimal" step="0.1" placeholder="Gy/f">
+      <input class="cell n" data-i="2" type="number" inputmode="numeric" step="1" placeholder="fx.">
+      <div class="out total" id="t2">0.0</div>
+      <div class="bed3"><span class="bedval c0" id="b2_0">0.0</span><span class="bedval c1" id="b2_1">0.0</span><span class="bedval c2" id="b2_2">0.0</span></div>
+    </div>
+
+    <div class="sum">
+      <div class="sumrow">
+        <div class="sumlabel"><svg width="24" height="16" style="color:#fff"><use href="#bike" width="24" height="16"/></svg>Sum</div>
+        <div class="sumcenter" id="sumN">0</div>
+        <div class="sumcenter" id="sumD">0.0</div>
+        <div class="bed3"><span class="sumcenter" id="sb0">0.0</span><span class="sumcenter" id="sb1">0.0</span><span class="sumcenter" id="sb2">0.0</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Equivalent card ===== -->
+  <div class="card">
+    <div class="card-title"><svg width="26" height="18" style="color:var(--purple)"><use href="#bike" width="26" height="18"/></svg>Equivalent fractionation</div>
+
+    <div class="panel">
+      <div class="plabel">Equivalent<br>Dose [Gy] in</div>
+      <div class="pinwrap"><input id="eqd_d" type="number" inputmode="decimal" step="0.1" value="2.0"><span class="punit">Gy/<br>fr.</span></div>
+      <div class="pout"><span id="eqd0">0.0</span><span id="eqd1">0.0</span><span id="eqd2">0.0</span></div>
+    </div>
+
+    <div class="panel">
+      <div class="plabel">Number of<br>fractions</div>
+      <div class="pinwrap"><input id="eqd_n" type="number" inputmode="numeric" step="1" value="25"><span class="punit">Gy/<br>fr.</span></div>
+      <div class="pout"><span id="fd0">0.0</span><span id="fd1">0.0</span><span id="fd2">0.0</span></div>
+    </div>
+  </div>
+
+  <div class="note">
+    LQ model：<span class="formula">BED = n·d·(1 + d/(α/β))</span><br>
+    等価線量は合計BEDから逆算。<span style="color:var(--pink)">■</span><span style="color:#0096a8">■</span><span style="color:#5c8a00">■</span> は左のα/β比に対応。
+  </div>
+
+  <div class="peloton">
+    <svg width="46" height="30" style="color:var(--pink)"><use href="#bike" width="46" height="30"/></svg>
+    <svg width="46" height="30" style="color:var(--cyan)"><use href="#bike" width="46" height="30"/></svg>
+    <svg width="46" height="30" style="color:var(--lime)"><use href="#bike" width="46" height="30"/></svg>
+    <svg width="46" height="30" style="color:var(--purple)"><use href="#bike" width="46" height="30"/></svg>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const num = el => { const v = parseFloat(el.value); return isFinite(v) ? v : 0; };
+  const fmt1 = x => (isFinite(x)? x.toFixed(1) : '0.0');
+  const fmt2 = x => (isFinite(x)? x.toFixed(2) : '0.0');
+
+  function abRatios(){ return [num($('ab0')), num($('ab1')), num($('ab2'))]; }
+  function bed(d, n, ab){
+    if(!(d>0) || !(n>0) || !(ab>0)) return 0;
+    return n*d*(1 + d/ab);
+  }
+
+  // Shrink a cell's font so long numbers never widen its fixed-width box.
+  const FIT_SEL='input.cell,.ab3 input,.out,.bedval,.sumcenter,.pout span,.pinput input,.pinwrap input';
+  function fit(el){
+    el.style.fontSize='';
+    if(el.scrollWidth<=el.clientWidth) return;
+    let size=parseFloat(getComputedStyle(el).fontSize);
+    while(el.scrollWidth>el.clientWidth+0.5 && size>9){ size-=1; el.style.fontSize=size+'px'; }
+  }
+  function fitAll(){ document.querySelectorAll(FIT_SEL).forEach(fit); }
+
+  function recompute(){
+    const ab = abRatios();
+    const ds = document.querySelectorAll('.cell.d');
+    const ns = document.querySelectorAll('.cell.n');
+    const sumBED = [0,0,0];
+    let sumN = 0, sumD = 0;
+
+    for(let r=0; r<3; r++){
+      const d = num(ds[r]), n = num(ns[r]);
+      const tot = (d>0 && n>0) ? d*n : 0;
+      $('t'+r).textContent = fmt1(tot);
+      sumN += (n>0 ? n : 0);
+      sumD += tot;
+      for(let c=0; c<3; c++){
+        const b = bed(d, n, ab[c]);
+        $('b'+r+'_'+c).textContent = fmt1(b);
+        sumBED[c] += b;
+      }
+    }
+
+    $('sumN').textContent = sumN ? String(Math.round(sumN)) : '0';
+    $('sumD').textContent = fmt1(sumD);
+    for(let c=0;c<3;c++) $('sb'+c).textContent = fmt1(sumBED[c]);
+
+    const dEq = num($('eqd_d'));
+    for(let c=0;c<3;c++){
+      let v = 0;
+      if(ab[c]>0 && dEq>=0){ v = sumBED[c] / (1 + dEq/ab[c]); }
+      $('eqd'+c).textContent = fmt1(v);
+    }
+
+    const nEq = num($('eqd_n'));
+    for(let c=0;c<3;c++){
+      let x = 0;
+      if(nEq>0 && ab[c]>0 && sumBED[c]>0){
+        const A = nEq/ab[c], B = nEq, C = -sumBED[c];
+        x = (-B + Math.sqrt(B*B - 4*A*C)) / (2*A);
+      }
+      $('fd'+c).textContent = fmt2(x);
+    }
+    fitAll();
+  }
+
+  document.querySelectorAll('input').forEach(el=>{
+    ['input','change','keyup','blur'].forEach(ev=>el.addEventListener(ev, recompute));
+    if(el.classList.contains('cell')||el.id==='eqd_n'){
+      el.addEventListener('focus', ()=>el.select());
+    }
+  });
+
+  // scatter faded bikes in the background
+  (function(){
+    const box = $('bgbikes');
+    const colors = ['#ff2e88','#00e5ff','#aaff00','#7c3aed','#ff8a00'];
+    const N = 10;
+    for(let i=0;i<N;i++){
+      const s = document.createElementNS('http://www.w3.org/2000/svg','svg');
+      const w = 70 + Math.random()*90;
+      s.setAttribute('width', w); s.setAttribute('height', w*0.58);
+      s.style.left = (Math.random()*92) + '%';
+      s.style.top  = (Math.random()*92) + '%';
+      s.style.color = colors[i % colors.length];
+      s.style.animationDelay = (-Math.random()*9) + 's';
+      s.style.animationDuration = (7 + Math.random()*6) + 's';
+      const u = document.createElementNS('http://www.w3.org/2000/svg','use');
+      u.setAttribute('href','#bike'); u.setAttribute('width', w); u.setAttribute('height', w*0.58);
+      s.appendChild(u); box.appendChild(s);
+    }
+  })();
+
+  recompute();
+  // Fallback for restricted JS environments (e.g. iOS Quick Look) where
+  // input events may not fire: recompute periodically. recompute() only
+  // writes to output cells, so it never disturbs the field being typed.
+  setInterval(recompute, 250);
+  window.addEventListener('resize', fitAll);
+})();
+</script>
+</body>
+</html>
