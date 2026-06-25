@@ -58,8 +58,9 @@
   .chip:nth-of-type(1) i{background:var(--c0);}
   .chip:nth-of-type(2) i{background:var(--c1);}
   .chip:nth-of-type(3) i{background:var(--c2);}
-  .chip input{width:34px;border:none;background:transparent;color:var(--ink);font-family:var(--mono);
-    font-size:14px;text-align:center;padding:0;}
+  /* wider + left-aligned so the native number spinner (PC) never overlaps the digits */
+  .chip input{width:56px;border:none;background:transparent;color:var(--ink);font-family:var(--mono);
+    font-size:14px;text-align:left;padding:0 0 0 2px;}
   .chip input:focus{outline:none;}
 
   /* ---------- Table ---------- */
@@ -126,6 +127,12 @@
 
   .foot{margin-top:30px;font-size:10.5px;color:var(--muted);line-height:1.7;text-align:center;letter-spacing:.02em;}
 
+  .resetwrap{padding:14px 0 0;}
+  .resetbtn{font-family:inherit;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;
+    color:var(--ink2);background:transparent;border:1px solid var(--line2);border-radius:8px;padding:8px 16px;cursor:pointer;transition:.15s;}
+  .resetbtn:hover{color:var(--accent);border-color:var(--accent);}
+  .resetbtn:active{transform:translateY(1px);}
+
   @media (max-width:430px){
     h1{font-size:25px;}
     input.cell,.out,.bedval,.sumv,.eqout>span{font-size:18px;}
@@ -187,6 +194,8 @@
       <div class="out" id="t2">0.0</div>
       <div class="bedcells"><span class="bedval c0" id="b2_0">0.0</span><span class="bedval c1" id="b2_1">0.0</span><span class="bedval c2" id="b2_2">0.0</span></div>
     </div>
+
+    <div class="resetwrap"><button type="button" id="resetBtn" class="resetbtn" title="3つの線量スケジュール（1回線量・照射回数）をリセット">↺ Reset schedule</button></div>
 
     <div class="tsum">
       <div class="sumlab">Σ Sum</div>
@@ -286,6 +295,14 @@
     ['input','change','keyup','blur'].forEach(ev=>el.addEventListener(ev, recompute));
     el.addEventListener('focus', ()=>el.select());
   });
+
+  // Reset button: clear only the 6 schedule fields (dose/fraction); α/β and Equivalent inputs are left intact.
+  const _rb=document.getElementById('resetBtn');
+  if(_rb) _rb.addEventListener('click', ()=>{
+    document.querySelectorAll('.cell.d, .cell.n').forEach(el=>{ el.value=''; el.style.fontSize=''; });
+    recompute();
+  });
+
   recompute();
   setInterval(recompute, 250);
   window.addEventListener('resize', fitAll);

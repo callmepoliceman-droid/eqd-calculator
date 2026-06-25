@@ -85,6 +85,12 @@
   .colhead>*,.rowwrap>*,.sumrow>*,.panel>*,.bed3>*,.ab3>*,.pout>*{min-width:0;}
   input.cell,.ab3 input,.out,.bedval,.sumcenter,.pout span,.pinput input,.pinwrap input{white-space:nowrap;overflow:hidden;}
 
+  .resetwrap{padding:8px 0 14px;}
+  .resetbtn{font-size:13px;font-weight:600;color:var(--blue);background:#fff;border:1px solid #b9c3da;
+    border-radius:9px;padding:8px 16px;cursor:pointer;}
+  .resetbtn:hover{background:var(--lav-light);}
+  .resetbtn:active{transform:translateY(1px);}
+
   @media (max-width:380px){
     .title{font-size:20px;}
     input.cell,.out,.bedval,.sumcenter{font-size:19px;}
@@ -136,6 +142,8 @@
       <div class="bed3"><span class="bedval" id="b2_0">0.0</span><span class="bedval" id="b2_1">0.0</span><span class="bedval" id="b2_2">0.0</span></div>
     </div>
   </div>
+
+  <div class="resetwrap"><button type="button" id="resetBtn" class="resetbtn" title="3つの線量スケジュール（1回線量・照射回数）をリセット">↺ Reset</button></div>
 
   <!-- Sum -->
   <div class="sumband">
@@ -246,6 +254,14 @@
       el.addEventListener('focus', ()=>el.select());
     }
   });
+
+  // Reset button: clear only the 6 schedule fields (dose/fraction); α/β and Equivalent inputs are left intact.
+  const _rb=document.getElementById('resetBtn');
+  if(_rb) _rb.addEventListener('click', ()=>{
+    document.querySelectorAll('.cell.d, .cell.n').forEach(el=>{ el.value=''; el.style.fontSize=''; });
+    recompute();
+  });
+
   recompute();
   // Fallback for restricted JS environments (e.g. iOS Quick Look) where
   // input events may not fire: recompute periodically. recompute() only
