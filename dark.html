@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>EQD Calculator — Dark</title>
+<style>
+  :root{
+    --bg:#0c0f14;
+    --bg2:#0f131a;
+    --panel:#12171f;
+    --line:#1e2530;
+    --line2:#283040;
+    --ink:#e8edf4;
+    --ink2:#aab4c2;
+    --muted:#69737f;
+    --accent:#5eead4;          /* teal */
+    --c0:#5eead4;              /* α/β col 1 */
+    --c1:#7cc2ff;              /* α/β col 2 */
+    --c2:#c4b5fd;              /* α/β col 3 */
+    --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(900px 500px at 80% -10%, rgba(94,234,212,.06), transparent 60%),
+      radial-gradient(700px 500px at -10% 110%, rgba(124,194,255,.05), transparent 60%),
+      var(--bg);
+    color:var(--ink);min-height:100vh;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Yu Gothic",sans-serif;
+    font-variant-numeric:tabular-nums;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:600px;margin:0 auto;padding:32px 18px 56px;}
+
+  /* ---------- Header ---------- */
+  .kicker{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);
+    font-weight:600;margin:0 0 8px;}
+  h1{margin:0;font-size:30px;font-weight:600;letter-spacing:-.01em;line-height:1.1;}
+  .formula{margin:10px 0 0;font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.01em;}
+  .formula b{color:var(--ink2);font-weight:500;}
+  .rule{height:1px;background:linear-gradient(90deg,var(--line2),transparent);margin:22px 0 8px;}
+
+  /* ---------- Section ---------- */
+  .sec-label{display:flex;align-items:center;gap:10px;margin:26px 0 14px;}
+  .sec-label span{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:600;}
+  .sec-label .ln{flex:1;height:1px;background:var(--line);}
+
+  /* ---------- α/β chips ---------- */
+  .abrow{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-bottom:4px;}
+  .abrow .lab{font-size:11px;color:var(--muted);margin-right:auto;letter-spacing:.04em;}
+  .chip{display:inline-flex;align-items:center;gap:5px;background:var(--panel);border:1px solid var(--line2);
+    border-radius:999px;padding:5px 10px 5px 12px;}
+  .chip i{width:6px;height:6px;border-radius:50%;font-style:normal;}
+  .chip:nth-of-type(1) i{background:var(--c0);}
+  .chip:nth-of-type(2) i{background:var(--c1);}
+  .chip:nth-of-type(3) i{background:var(--c2);}
+  .chip input{width:34px;border:none;background:transparent;color:var(--ink);font-family:var(--mono);
+    font-size:14px;text-align:center;padding:0;}
+  .chip input:focus{outline:none;}
+
+  /* ---------- Table ---------- */
+  .tbl{width:100%;}
+  .thead,.trow,.tsum{display:grid;grid-template-columns:1.15fr .9fr .95fr 2.55fr;gap:10px;align-items:center;}
+  .bedhead{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .thead{padding-bottom:12px;border-bottom:1px solid var(--line);}
+  .th{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-weight:600;
+    line-height:1.3;text-align:center;}
+  .th em{font-style:italic;color:var(--ink2);text-transform:none;letter-spacing:0;font-size:11px;}
+  .th.l{text-align:left;}
+  .bedhead .th.c0{color:var(--c0);}
+  .bedhead .th.c1{color:var(--c1);}
+  .bedhead .th.c2{color:var(--c2);}
+
+  .trow{padding:13px 0;border-bottom:1px solid var(--line);min-height:60px;}
+  /* inputs as underlined fields */
+  input.cell{width:100%;min-width:0;background:transparent;border:none;
+    border-bottom:1.5px solid var(--line2);color:var(--ink);
+    font-family:var(--mono);font-size:21px;font-weight:500;text-align:center;
+    padding:6px 2px 7px;transition:border-color .15s,box-shadow .15s;}
+  input.cell::placeholder{color:#3c4654;font-weight:400;}
+  input.cell:focus{outline:none;border-bottom-color:var(--accent);
+    box-shadow:0 1px 0 0 var(--accent);}
+
+  .out{font-family:var(--mono);font-size:21px;font-weight:500;text-align:center;color:var(--ink2);
+    overflow:hidden;white-space:nowrap;}
+  .bedcells{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .bedcells>span,.sumbed>span{min-width:0;}
+  .bedval{font-family:var(--mono);font-size:21px;font-weight:600;text-align:center;
+    overflow:hidden;white-space:nowrap;}
+  .bedval.c0{color:var(--c0);} .bedval.c1{color:var(--c1);} .bedval.c2{color:var(--c2);}
+  .zero{color:#39424f !important;font-weight:400;}
+
+  /* ---------- Sum ---------- */
+  .tsum{padding:16px 0 4px;margin-top:2px;border-top:1.5px solid var(--line2);}
+  .sumlab{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:600;}
+  .sumv{font-family:var(--mono);font-size:21px;font-weight:500;text-align:center;color:var(--ink2);
+    overflow:hidden;white-space:nowrap;}
+  .sumbed{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .sumbed .bedval{font-size:24px;font-weight:700;}
+
+  /* ---------- Equivalent ---------- */
+  .eqcard{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);
+    border-radius:14px;padding:6px 16px;margin-top:6px;}
+  .eqrow{display:grid;grid-template-columns:1.6fr 1.6fr 2.7fr;gap:12px;align-items:center;
+    padding:16px 0;border-bottom:1px solid var(--line);}
+  .eqrow:last-child{border-bottom:none;}
+  .eqlab{font-size:12px;color:var(--ink2);line-height:1.4;}
+  .eqlab small{display:block;color:var(--muted);font-size:10.5px;letter-spacing:.04em;}
+  .eqin{display:flex;align-items:baseline;gap:6px;}
+  .eqin input{width:100%;min-width:0;background:transparent;border:none;border-bottom:1.5px solid var(--line2);
+    color:var(--accent);font-family:var(--mono);font-size:22px;font-weight:600;text-align:center;padding:5px 2px 6px;}
+  .eqin input:focus{outline:none;border-bottom-color:var(--accent);box-shadow:0 1px 0 0 var(--accent);}
+  .eqin .u{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap;}
+  .eqout{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .eqout>span{min-width:0;font-family:var(--mono);font-size:21px;font-weight:600;text-align:center;
+    overflow:hidden;white-space:nowrap;}
+  .eqout>span:nth-child(1){color:var(--c0);}
+  .eqout>span:nth-child(2){color:var(--c1);}
+  .eqout>span:nth-child(3){color:var(--c2);}
+
+  .foot{margin-top:30px;font-size:10.5px;color:var(--muted);line-height:1.7;text-align:center;letter-spacing:.02em;}
+
+  @media (max-width:430px){
+    h1{font-size:25px;}
+    input.cell,.out,.bedval,.sumv,.eqout>span{font-size:18px;}
+    .sumbed .bedval{font-size:20px;}
+    .thead,.trow,.tsum{grid-template-columns:1.1fr .85fr .95fr 2.5fr;gap:7px;}
+    .bedhead,.bedcells,.sumbed,.eqout{gap:7px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <p class="kicker">Radiation Oncology · Linear–Quadratic Model</p>
+  <h1>EQD Calculator</h1>
+  <p class="formula"><b>BED</b> = n·d·(1 + d / (α/β))&nbsp;&nbsp;·&nbsp;&nbsp;<b>EQD</b><sub>d</sub> = BED / (1 + d / (α/β))</p>
+  <div class="rule"></div>
+
+  <!-- α/β config -->
+  <div class="abrow">
+    <span class="lab">α/β ratio [Gy] — editable</span>
+    <label class="chip"><i></i><input id="ab0" type="number" inputmode="decimal" step="0.1" value="1.5"></label>
+    <label class="chip"><i></i><input id="ab1" type="number" inputmode="decimal" step="0.1" value="3.0"></label>
+    <label class="chip"><i></i><input id="ab2" type="number" inputmode="decimal" step="0.1" value="10.0"></label>
+  </div>
+
+  <!-- Dose schedule -->
+  <div class="sec-label"><span>Dose schedule</span><div class="ln"></div></div>
+
+  <div class="tbl">
+    <div class="thead">
+      <div class="th l">Fraction&nbsp;dose<br><em>d</em> [Gy]</div>
+      <div class="th">Fractions<br><em>n</em></div>
+      <div class="th">Total<br><em>n·d</em> [Gy]</div>
+      <div class="bedhead">
+        <div class="th c0">BED<br>α/β 1</div>
+        <div class="th c1">BED<br>α/β 2</div>
+        <div class="th c2">BED<br>α/β 3</div>
+      </div>
+    </div>
+
+    <div class="trow">
+      <input class="cell d" data-i="0" type="number" inputmode="decimal" step="0.1" placeholder="–">
+      <input class="cell n" data-i="0" type="number" inputmode="numeric" step="1" placeholder="–">
+      <div class="out" id="t0">0.0</div>
+      <div class="bedcells"><span class="bedval c0" id="b0_0">0.0</span><span class="bedval c1" id="b0_1">0.0</span><span class="bedval c2" id="b0_2">0.0</span></div>
+    </div>
+    <div class="trow">
+      <input class="cell d" data-i="1" type="number" inputmode="decimal" step="0.1" placeholder="–">
+      <input class="cell n" data-i="1" type="number" inputmode="numeric" step="1" placeholder="–">
+      <div class="out" id="t1">0.0</div>
+      <div class="bedcells"><span class="bedval c0" id="b1_0">0.0</span><span class="bedval c1" id="b1_1">0.0</span><span class="bedval c2" id="b1_2">0.0</span></div>
+    </div>
+    <div class="trow">
+      <input class="cell d" data-i="2" type="number" inputmode="decimal" step="0.1" placeholder="–">
+      <input class="cell n" data-i="2" type="number" inputmode="numeric" step="1" placeholder="–">
+      <div class="out" id="t2">0.0</div>
+      <div class="bedcells"><span class="bedval c0" id="b2_0">0.0</span><span class="bedval c1" id="b2_1">0.0</span><span class="bedval c2" id="b2_2">0.0</span></div>
+    </div>
+
+    <div class="tsum">
+      <div class="sumlab">Σ Sum</div>
+      <div class="sumv" id="sumN">0</div>
+      <div class="sumv" id="sumD">0.0</div>
+      <div class="sumbed"><span class="bedval c0" id="sb0">0.0</span><span class="bedval c1" id="sb1">0.0</span><span class="bedval c2" id="sb2">0.0</span></div>
+    </div>
+  </div>
+
+  <!-- Equivalent -->
+  <div class="sec-label"><span>Equivalent fractionation</span><div class="ln"></div></div>
+
+  <div class="eqcard">
+    <div class="eqrow">
+      <div class="eqlab">Equivalent total dose<small>at fixed fraction dose</small></div>
+      <div class="eqin"><input id="eqd_d" type="number" inputmode="decimal" step="0.1" value="2.0"><span class="u">Gy/fr</span></div>
+      <div class="eqout"><span id="eqd0">0.0</span><span id="eqd1">0.0</span><span id="eqd2">0.0</span></div>
+    </div>
+    <div class="eqrow">
+      <div class="eqlab">Fraction dose<small>at fixed no. of fractions</small></div>
+      <div class="eqin"><input id="eqd_n" type="number" inputmode="numeric" step="1" value="25"><span class="u">fr</span></div>
+      <div class="eqout"><span id="fd0">0.0</span><span id="fd1">0.0</span><span id="fd2">0.0</span></div>
+    </div>
+  </div>
+
+  <p class="foot">Equivalent doses are derived from total BED. Columns map to the α/β values above.</p>
+
+</div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const num = el => { const v = parseFloat(el.value); return isFinite(v) ? v : 0; };
+  const fmt1 = x => (isFinite(x)? x.toFixed(1) : '0.0');
+  const fmt2 = x => (isFinite(x)? x.toFixed(2) : '0.0');
+  const z = (el,v) => { el.textContent = v; el.classList.toggle('zero', !(parseFloat(v) > 0)); };
+
+  function abRatios(){ return [num($('ab0')), num($('ab1')), num($('ab2'))]; }
+  function bed(d, n, ab){
+    if(!(d>0) || !(n>0) || !(ab>0)) return 0;
+    return n*d*(1 + d/ab);
+  }
+
+  const FIT_SEL='input.cell,.out,.bedval,.sumv,.eqout>span,.eqin input';
+  function fit(el){
+    el.style.fontSize='';
+    if(el.scrollWidth<=el.clientWidth) return;
+    let size=parseFloat(getComputedStyle(el).fontSize);
+    while(el.scrollWidth>el.clientWidth+0.5 && size>9){ size-=1; el.style.fontSize=size+'px'; }
+  }
+  function fitAll(){ document.querySelectorAll(FIT_SEL).forEach(fit); }
+
+  function recompute(){
+    const ab = abRatios();
+    const ds = document.querySelectorAll('.cell.d');
+    const ns = document.querySelectorAll('.cell.n');
+    const sumBED = [0,0,0];
+    let sumN = 0, sumD = 0;
+
+    for(let r=0; r<3; r++){
+      const d = num(ds[r]), n = num(ns[r]);
+      const tot = (d>0 && n>0) ? d*n : 0;
+      z($('t'+r), fmt1(tot));
+      sumN += (n>0 ? n : 0);
+      sumD += tot;
+      for(let c=0; c<3; c++){
+        const b = bed(d, n, ab[c]);
+        z($('b'+r+'_'+c), fmt1(b));
+        sumBED[c] += b;
+      }
+    }
+
+    z($('sumN'), sumN ? String(Math.round(sumN)) : '0');
+    z($('sumD'), fmt1(sumD));
+    for(let c=0;c<3;c++) z($('sb'+c), fmt1(sumBED[c]));
+
+    const dEq = num($('eqd_d'));
+    for(let c=0;c<3;c++){
+      let v = 0;
+      if(ab[c]>0 && dEq>=0){ v = sumBED[c] / (1 + dEq/ab[c]); }
+      z($('eqd'+c), fmt1(v));
+    }
+
+    const nEq = num($('eqd_n'));
+    for(let c=0;c<3;c++){
+      let x = 0;
+      if(nEq>0 && ab[c]>0 && sumBED[c]>0){
+        const A = nEq/ab[c], B = nEq, C = -sumBED[c];
+        x = (-B + Math.sqrt(B*B - 4*A*C)) / (2*A);
+      }
+      z($('fd'+c), fmt2(x));
+    }
+    fitAll();
+  }
+
+  document.querySelectorAll('input').forEach(el=>{
+    ['input','change','keyup','blur'].forEach(ev=>el.addEventListener(ev, recompute));
+    el.addEventListener('focus', ()=>el.select());
+  });
+  recompute();
+  setInterval(recompute, 250);
+  window.addEventListener('resize', fitAll);
+})();
+</script>
+</body>
+</html>
