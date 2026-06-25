@@ -49,8 +49,9 @@
   .sec-label .ln{flex:1;height:1px;background:var(--line);}
 
   /* ---------- α/β chips ---------- */
-  .abrow{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-bottom:4px;}
+  .abrow{display:flex;align-items:center;justify-content:flex-end;gap:8px 12px;flex-wrap:wrap;margin-bottom:4px;}
   .abrow .lab{font-size:11px;color:var(--muted);margin-right:auto;letter-spacing:.04em;}
+  .chips{display:flex;gap:8px;flex:0 0 auto;}
   .chip{display:inline-flex;align-items:center;gap:5px;background:var(--panel);border:1px solid var(--line2);
     border-radius:999px;padding:5px 10px 5px 12px;}
   .chip i{width:6px;height:6px;border-radius:50%;font-style:normal;}
@@ -63,6 +64,8 @@
 
   /* ---------- Table ---------- */
   .tbl{width:100%;}
+  /* keep fr columns honored so header & data rows line up; shrink font instead of widening */
+  .thead>*,.trow>*,.tsum>*,.bedhead>*,.bedcells>*,.sumbed>*,.eqrow>*,.eqout>*{min-width:0;}
   .thead,.trow,.tsum{display:grid;grid-template-columns:1.15fr .9fr .95fr 2.55fr;gap:10px;align-items:center;}
   .bedhead{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
   .thead{padding-bottom:12px;border-bottom:1px solid var(--line);}
@@ -144,9 +147,11 @@
   <!-- α/β config -->
   <div class="abrow">
     <span class="lab">α/β ratio [Gy] — editable</span>
-    <label class="chip"><i></i><input id="ab0" type="number" inputmode="decimal" step="0.1" value="1.5"></label>
-    <label class="chip"><i></i><input id="ab1" type="number" inputmode="decimal" step="0.1" value="3.0"></label>
-    <label class="chip"><i></i><input id="ab2" type="number" inputmode="decimal" step="0.1" value="10.0"></label>
+    <div class="chips">
+      <label class="chip"><i></i><input id="ab0" type="number" inputmode="decimal" step="0.1" value="1.5"></label>
+      <label class="chip"><i></i><input id="ab1" type="number" inputmode="decimal" step="0.1" value="3.0"></label>
+      <label class="chip"><i></i><input id="ab2" type="number" inputmode="decimal" step="0.1" value="10.0"></label>
+    </div>
   </div>
 
   <!-- Dose schedule -->
@@ -154,7 +159,7 @@
 
   <div class="tbl">
     <div class="thead">
-      <div class="th l">Fraction&nbsp;dose<br><em>d</em> [Gy]</div>
+      <div class="th l">Fraction dose<br><em>d</em> [Gy]</div>
       <div class="th">Fractions<br><em>n</em></div>
       <div class="th">Total<br><em>n·d</em> [Gy]</div>
       <div class="bedhead">
